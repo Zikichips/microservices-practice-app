@@ -1,0 +1,61 @@
+services:
+  currency-exchange:
+    build:
+      context: ./currency-exchange-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8080"
+    depends_on:
+      - currency-exchange-mysql
+    networks:
+      - microservices-net
+    environment:
+      - spring.datasource.url=jdbc:mysql://currency-exchange-mysql:3306/currency_exchange_db
+
+  currency-exchange-mysql:
+    image: mysql:8.0
+    environment:
+#      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: admin@2022
+      MYSQL_DATABASE: currency_exchange_db
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3307:3306"
+    networks:
+      - microservices-net
+#    volumes:
+#      - ./data.sql:/docker-entrypoint-initdb.d/init.sql
+
+  currency-conversion:
+    build:
+      context: ./currency-conversion-service
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8000"
+    networks:
+      - microservices-net
+
+
+#  api-gateway:
+#    build:
+#      context: ./api-gateway
+#      dockerfile: Dockerfile
+#    ports:
+#      - "8765:8000"
+#    depends_on:
+#      - naming-server
+#    networks:
+#      - microservices-net
+
+  naming-server:
+    build:
+      context: ./naming-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
